@@ -1,9 +1,9 @@
 pipeline {
     agent any 
     stages {
-        stage('test') {
-            steps {
-                echo 'Hello world!' 
+        stage('create cluster') {
+            withAWS(roleAccount:'173411263722', role:'udacity-eks-admin') {
+                sh 'aws s3 ls'
             }
         }
     }
