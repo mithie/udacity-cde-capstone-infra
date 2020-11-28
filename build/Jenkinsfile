@@ -13,7 +13,6 @@ pipeline {
         stage('create cluster') {
             steps {
                 withAWS(credentials: 'aws-creds', region: 'eu-central-1') {
-                    sh 'cat ~/.aws/credentials'
                     sh 'aws configure list'
                     sh 'aws sts get-caller-identity'
                     sh 'aws s3 ls'
