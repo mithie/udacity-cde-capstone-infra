@@ -1,11 +1,10 @@
 pipeline {
     agent any 
     stages {
-        stage('create cluster') {
+        stage('create eks cluster: udacity-cluster') {
             steps {
                 withAWS(credentials: 'aws-creds', region: 'eu-central-1') {
-                    sh 'aws configure list'
-                    sh 'aws s3 ls'
+                    sh 'eksctl create cluster -f cluster.yaml'
                 }
             }
         }
