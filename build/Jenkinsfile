@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('create cluster') {
             steps {
-                withAWS(roleAccount:'173411263722', role:'udacity-eks-admin') {
+                withAWS(credentials: 'aws-creds', region: 'eu-central-1') {
                     sh 'aws s3 ls'
                 }
             }
