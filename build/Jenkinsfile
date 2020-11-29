@@ -1,15 +1,19 @@
 pipeline {
-    agent none 
+    agent any 
     stages {
         stage('create eks cluster: udacity-cluster') {
-            agent {
-                docker { image 'weaveworks/eksctl:0.32.0' }
-            }        
             steps {
                 withAWS(credentials: 'aws-creds', region: 'eu-central-1', role: 'udacity-eks-admin') {
-                    sh 'aws sts get-caller-identity'
-                    sh 'eksctl version'
-                    sh 'eksctl create cluster --name udacity-cluster --region eu-central-1 --version=1.18'
+                    sh 'ls -la /usr/local/bin'
+                    sh '/usr/local/bin/eksctl version'
+                    sh '/usr/local/bin/eksctl create cluster -f cluster.yaml'
+                }
+            }
+        }
+        stage('update eks config') {
+            steps {
+                withAWS(credentials: 'aws-creds', region: 'eu-central-1', role: 'udacity-eks-admin') {
+                    aws eks update-kubeconfig --name udacity-cluster --profile uda-eks-admin
                 }
             }
         }
