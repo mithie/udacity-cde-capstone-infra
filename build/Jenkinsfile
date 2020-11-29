@@ -8,8 +8,8 @@ pipeline {
             steps {
                 withAWS(credentials: 'aws-creds', region: 'eu-central-1', role: 'udacity-eks-admin') {
                     sh 'aws sts get-caller-identity'
-                    sh 'version'
-                    sh 'create cluster --name udacity-cluster --region eu-central-1 --version=1.18'
+                    sh 'eksctl version'
+                    sh 'eksctl create cluster --name udacity-cluster --region eu-central-1 --version=1.18'
                 }
             }
         }
