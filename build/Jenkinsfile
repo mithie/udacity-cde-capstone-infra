@@ -13,7 +13,7 @@ pipeline {
         stage('update eks config') {
             steps {
                 withAWS(credentials: 'aws-creds', region: 'eu-central-1', role: 'udacity-eks-admin') {
-                    aws eks update-kubeconfig --name udacity-cluster --profile uda-eks-admin
+                    aws eks update-kubeconfig --name udacity-cluster
                 }
             }
         }
