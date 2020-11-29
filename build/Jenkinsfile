@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('create eks cluster: udacity-cluster') {
             agent {
-                docker { image 'weaveworks/eksctl' }
+                docker { image 'weaveworks/eksctl:0.32.0' }
             }        
             steps {
                 withAWS(credentials: 'aws-creds', region: 'eu-central-1') {
