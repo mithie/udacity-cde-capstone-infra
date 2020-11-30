@@ -1,0 +1,7 @@
+#@data/values
+---
+EKSClusterName: udacity
+EKSRegion: eu-central-1
+EKSNodegroupName: udacity-ng-1
+EKSNodegroupInstanceType: t2.micro
+EKSNodegroupDesiredCapacity: 2

@@ -17,5 +17,44 @@ pipeline {
                 }
             }
         }
+        
+        
+        
+        stage('install kubectl') {
+            steps {
+                sh '''
+                curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.18.9/2020-11-02/bin/linux/amd64/kubectl
+                chmod +x ./kubectl
+                cp ./kubectl $HOME/bin/kubectl && export PATH=$PATH:$HOME/bin
+                kubectl version --short --client
+                '''
+            }
+        }
+        stage('install eksctl') {
+            steps {
+                sh '''
+                export LC_CTYPE=en_US.UTF-8
+                curl --silent --location https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz | tar xz -C .
+                mv eksctl $HOME/bin && export PATH=$PATH:$HOME/bin
+                eksctl version
+                '''
+            }
+        }
+        stage('update eks config') {
+            steps {
+                withAWS(credentials: 'aws-creds', region: 'eu-central-1', role: 'udacity-eks-admin') {
+                    sh 'aws eks update-kubeconfig --name udacity-cluster'
+                    sh '$HOME/bin/kubectl get svc'
+                }
+            }
+        }
+        stage('delete eks cluster') {
+            steps {
+                withAWS(credentials: 'aws-creds', region: 'eu-central-1', role: 'udacity-eks-admin') {
+                    sh '$HOME/bin/eksctl delete cluster -f cluster.yaml'
+                }
+            }
+        }
+        
     }
 }

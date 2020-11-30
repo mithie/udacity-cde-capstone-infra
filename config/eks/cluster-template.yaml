@@ -1,0 +1,14 @@
+#@ load("@ytt:data", "data")
+
+---
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: #@ data.values.EKSClusterName
+  region: #@ data.values.EKSRegion
+
+nodeGroups:
+  - name: #@ data.values.EKSNodegroupName
+    instanceType: #@ data.values.EKSNodegroupInstanceType
+    desiredCapacity: #@ data.values.EKSNodegroupDesiredCapacity
