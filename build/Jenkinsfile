@@ -8,14 +8,14 @@ pipeline {
     stages {
         stage('prepare aws iam') {
             steps {
-                withAWS(credentials: 'aws-creds', region: '${AWS_REGION}') {
-                    sh './scripts/prepare-iam.sh ${EKS_ADMIN_ROLE}'
+                withAWS(credentials: 'aws-creds', region: ${AWS_REGION}) {
+                    sh 'cd scripts && ./prepare-iam.sh ${EKS_ADMIN_ROLE} ${EKS_PROFILE_NAME}'
                 }
             }
         }
         stage('install udacity eks cluster') {
             steps {
-                withAWS(credentials: 'aws-creds', region: '${AWS_REGION}', role: '${EKS_ADMIN_ROLE}') {
+                withAWS(credentials: 'aws-creds', region: ${AWS_REGION}, role: ${EKS_ADMIN_ROLE}) {
                     sh '''
                     export LC_CTYPE=en_US.UTF-8
                     curl --silent --location https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz | tar xz -C .
@@ -37,7 +37,7 @@ pipeline {
         }
         stage('update eks config') {
             steps {
-                withAWS(credentials: 'aws-creds', region: '${AWS_REGION}', role: '${EKS_ADMIN_ROLE}') {
+                withAWS(credentials: 'aws-creds', region: ${AWS_REGION}, role: ${EKS_ADMIN_ROLE}) {
                     sh 'aws eks update-kubeconfig --name udacity-cluster --profile ${EKS_PROFILE_NAME}'
                 }
             }
