@@ -4,6 +4,9 @@ EKS_ROLE_NAME=$1
 EKS_PROFILE_NAME=$2
 EKS_ADMIN_USER=udacity-eks-admin-user
 
+echo "showing ls -la from within script"
+ls -la
+
 aws cloudformation deploy \
   --template-file ../config/iam/prepare-iam-cfn.yaml \
   --stack-name "udacity-eks-roles-and-permissions" \
