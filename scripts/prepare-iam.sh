@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
+EKS_ROLE_NAME=$1
+EKS_PROFILE_NAME=$2
 EKS_ADMIN_USER=udacity-eks-admin-user
-EKS_ROLE_NAME=udacity-eks-admin-role
-EKS_PROFILE_NAME=udacity-eks
 
 aws cloudformation deploy \
   --template-file ../config/iam/prepare-iam-cfn.yaml \

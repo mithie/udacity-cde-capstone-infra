@@ -1,60 +1,46 @@
 pipeline {
     agent any 
+    environment {
+        AWS_REGION="eu-central-1"
+        EKS_ADMIN_ROLE="udacity-eks-admin-role"
+        EKS_PROFILE_NAME="udacity-eks"
+    }
     stages {
-        stage('create eks cluster: udacity-cluster') {
+        stage('prepare aws iam') {
             steps {
-                withAWS(credentials: 'aws-creds', region: 'eu-central-1', role: 'udacity-eks-admin') {
-                    sh 'ls -la /usr/local/bin'
-                    sh '/usr/local/bin/eksctl version'
-                    sh '/usr/local/bin/eksctl create cluster -f cluster.yaml'
+                withAWS(credentials: 'aws-creds', region: '${AWS_REGION}') {
+                    sh './scripts/prepare-iam.sh ${EKS_ADMIN_ROLE}'
+                }
+            }
+        }
+        stage('install udacity eks cluster') {
+            steps {
+                withAWS(credentials: 'aws-creds', region: '${AWS_REGION}', role: '${EKS_ADMIN_ROLE}') {
+                    sh '''
+                    export LC_CTYPE=en_US.UTF-8
+                    curl --silent --location https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz | tar xz -C .
+                    mv eksctl $HOME/bin && export PATH=$PATH:$HOME/bin
+                    eksctl version
+                    
+                    wget -cO - https://github.com/vmware-tanzu/carvel-ytt/releases/download/v0.30.0/ytt-linux-amd64 > ytt
+                    chmod +x ./ytt
+                    mv ytt $HOME/bin
+                    ytt version
+                    
+                    ytt -f . > cluster-ytt.yaml
+                    cat cluster-ytt.yaml
+                    
+                    eksctl create cluster -f cluster-ytt.yaml
+                    '''
                 }
             }
         }
         stage('update eks config') {
             steps {
-                withAWS(credentials: 'aws-creds', region: 'eu-central-1', role: 'udacity-eks-admin') {
-                    sh 'aws eks update-kubeconfig --name udacity-cluster'
+                withAWS(credentials: 'aws-creds', region: '${AWS_REGION}', role: '${EKS_ADMIN_ROLE}') {
+                    sh 'aws eks update-kubeconfig --name udacity-cluster --profile ${EKS_PROFILE_NAME}'
                 }
             }
-        }
-        
-        
-        
-        stage('install kubectl') {
-            steps {
-                sh '''
-                curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.18.9/2020-11-02/bin/linux/amd64/kubectl
-                chmod +x ./kubectl
-                cp ./kubectl $HOME/bin/kubectl && export PATH=$PATH:$HOME/bin
-                kubectl version --short --client
-                '''
-            }
-        }
-        stage('install eksctl') {
-            steps {
-                sh '''
-                export LC_CTYPE=en_US.UTF-8
-                curl --silent --location https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz | tar xz -C .
-                mv eksctl $HOME/bin && export PATH=$PATH:$HOME/bin
-                eksctl version
-                '''
-            }
-        }
-        stage('update eks config') {
-            steps {
-                withAWS(credentials: 'aws-creds', region: 'eu-central-1', role: 'udacity-eks-admin') {
-                    sh 'aws eks update-kubeconfig --name udacity-cluster'
-                    sh '$HOME/bin/kubectl get svc'
-                }
-            }
-        }
-        stage('delete eks cluster') {
-            steps {
-                withAWS(credentials: 'aws-creds', region: 'eu-central-1', role: 'udacity-eks-admin') {
-                    sh '$HOME/bin/eksctl delete cluster -f cluster.yaml'
-                }
-            }
-        }
-        
+        }        
     }
 }
