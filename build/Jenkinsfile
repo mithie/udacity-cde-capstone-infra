@@ -1,6 +1,7 @@
 pipeline {
     agent any 
     environment {
+        ACCOUNT_ID="173411263722"
         AWS_REGION="eu-central-1"
         EKS_ADMIN_ROLE="udacity-eks-admin-role"
         EKS_PROFILE_NAME="udacity-eks"
@@ -17,7 +18,7 @@ pipeline {
         stage('install udacity eks cluster') {
             steps {
                 sh '''
-                ./scripts/assume-role.sh $CFN_STACK_NAME
+                ./scripts/assume-role.sh ${ACCOUNT_ID} ${EKS_ADMIN_ROLE}
                 
                 aws sts get-caller-identity
                 
@@ -40,7 +41,7 @@ pipeline {
         }
         stage('update eks config') {
             steps {
-                sh './scripts/assume-role.sh $CFN_STACK_NAME'
+                sh './scripts/assume-role.sh ${ACCOUNT_ID} ${EKS_ADMIN_ROLE}'
                 sh 'aws sts get-caller-identity'
                 sh 'aws eks update-kubeconfig --name udacity-cluster --profile ${EKS_PROFILE_NAME}'
             }
