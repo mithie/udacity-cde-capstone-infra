@@ -19,7 +19,6 @@ pipeline {
             steps {
                 sh '''
                 ./scripts/assume-role.sh ${ACCOUNT_ID} ${EKS_ADMIN_ROLE}
-                
                 aws sts get-caller-identity
                 
                 export LC_CTYPE=en_US.UTF-8
@@ -35,15 +34,15 @@ pipeline {
                 ytt -f . > cluster-ytt.yaml
                 cat cluster-ytt.yaml
                 
-                eksctl create cluster -f cluster-ytt.yaml
+                #eksctl create cluster -f cluster-ytt.yaml
                 '''
             }
         }
         stage('update eks config') {
             steps {
                 sh './scripts/assume-role.sh ${ACCOUNT_ID} ${EKS_ADMIN_ROLE}'
+                sh 'aws eks update-kubeconfig --name udacity --profile ${EKS_PROFILE_NAME}'
                 sh 'aws sts get-caller-identity'
-                sh 'aws eks update-kubeconfig --name udacity-cluster --profile ${EKS_PROFILE_NAME}'
             }
         }        
     }
