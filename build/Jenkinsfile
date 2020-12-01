@@ -39,7 +39,7 @@ pipeline {
                 ytt -f . > cluster-ytt.yaml
                 cat cluster-ytt.yaml
                 
-                eksctl create cluster -f cluster-ytt.yaml
+                eksctl create cluster -f cluster-ytt.yaml --profile ${EKS_PROFILE_NAME}
                 '''
             }
         }
