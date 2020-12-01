@@ -19,6 +19,8 @@ pipeline {
                 sh '''
                 ./scripts/assume-role.sh $CFN_STACK_NAME
                 
+                aws sts get-caller-identity
+                
                 export LC_CTYPE=en_US.UTF-8
                 curl --silent --location https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz | tar xz -C .
                 mv eksctl $HOME/bin && export PATH=$PATH:$HOME/bin
@@ -39,6 +41,7 @@ pipeline {
         stage('update eks config') {
             steps {
                 sh './scripts/assume-role.sh $CFN_STACK_NAME'
+                sh 'aws sts get-caller-identity'
                 sh 'aws eks update-kubeconfig --name udacity-cluster --profile ${EKS_PROFILE_NAME}'
             }
         }        
