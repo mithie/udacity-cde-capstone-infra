@@ -10,7 +10,7 @@ pipeline {
         stage('prepare aws iam') {
             steps {
                 withAWS(credentials: 'aws-default-credentials', region: 'eu-central-1') {
-                    sh 'cd scripts && ./prepare-iam.sh ${EKS_ADMIN_ROLE} ${EKS_PROFILE_NAME}'
+                    sh 'cd scripts && ./prepare-iam.sh ${EKS_ADMIN_ROLE} ${EKS_PROFILE_NAME} ${CFN_STACK_NAME}'
                 }
             }
         }
