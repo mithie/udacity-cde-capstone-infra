@@ -2,6 +2,7 @@
 
 EKS_ROLE_NAME=$1
 EKS_PROFILE_NAME=$2
+CFN_STACK_NAME=$3
 EKS_ADMIN_USER=udacity-eks-admin-user
 
 aws cloudformation deploy \
@@ -19,7 +20,7 @@ aws configure set default.region eu-central-1
 
 # ~/.aws/config [profile uda-eks-admin]
 echo "retrieving eks role arn..."
-EKS_ADMIN_ROLE_ARN=$(aws cloudformation describe-stacks --stack-name udacity-eks-roles-and-permissions --region eu-central-1 --query "Stacks[0].Outputs[?OutputKey=='EKSAdminRoleARN'].OutputValue" --output text)
+EKS_ADMIN_ROLE_ARN=$(aws cloudformation describe-stacks --stack-name $CFN_STACK_NAME --region eu-central-1 --query "Stacks[0].Outputs[?OutputKey=='EKSAdminRoleARN'].OutputValue" --output text)
 
 echo $EKS_ADMIN_ROLE_ARN
 
