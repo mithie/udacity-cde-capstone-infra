@@ -18,32 +18,11 @@ pipeline {
         stage('install udacity eks cluster') {
             steps {
                 sh '''
-                ./scripts/assume-role.sh ${ACCOUNT_ID} ${EKS_ADMIN_ROLE}
+                sleep 5
                 aws sts get-caller-identity
                 
-                export LC_CTYPE=en_US.UTF-8
-                curl --silent --location https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz | tar xz -C .
-                mv eksctl $HOME/bin && export PATH=$PATH:$HOME/bin
-                eksctl version
-                
-                wget -cO - https://github.com/vmware-tanzu/carvel-ytt/releases/download/v0.30.0/ytt-linux-amd64 > ytt
-                chmod +x ./ytt
-                mv ytt $HOME/bin
-                ytt version
-                
-                ytt -f . > cluster-ytt.yaml
-                cat cluster-ytt.yaml
-                
-                #eksctl create cluster -f cluster-ytt.yaml
                 '''
             }
         }
-        stage('update eks config') {
-            steps {
-                sh './scripts/assume-role.sh ${ACCOUNT_ID} ${EKS_ADMIN_ROLE}'
-                sh 'aws eks update-kubeconfig --name udacity --profile ${EKS_PROFILE_NAME}'
-                sh 'aws sts get-caller-identity'
-            }
-        }        
     }
 }
