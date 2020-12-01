@@ -1,7 +1,6 @@
 pipeline {
     agent any 
     environment {
-        ACCOUNT_ID="173411263722"
         AWS_REGION="eu-central-1"
         EKS_ADMIN_ROLE="udacity-eks-admin-role"
         EKS_PROFILE_NAME="udacity-eks"
@@ -11,7 +10,11 @@ pipeline {
         stage('prepare aws iam') {
             steps {
                 withAWS(credentials: 'aws-default-credentials', region: 'eu-central-1') {
-                    sh 'cd scripts && ./prepare-iam.sh ${EKS_ADMIN_ROLE} ${EKS_PROFILE_NAME} ${CFN_STACK_NAME}'
+                    if ! aws cloudformation describe-stacks --region ${AWS_REGION} --stack-name ${CFN_STACK_NAME} ; then
+                        cd scripts && ./prepare-iam.sh ${EKS_ADMIN_ROLE} ${EKS_PROFILE_NAME} ${CFN_STACK_NAME}
+                    else
+                        echo "stack ${CFN_STACK_NAME} already exists. continue without action in this stage..."
+                    fi
                 }
             }
         }
@@ -21,8 +24,28 @@ pipeline {
                 sleep 5
                 aws sts get-caller-identity
                 
+                export LC_CTYPE=en_US.UTF-8
+                curl --silent --location https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz | tar xz -C .
+                mv eksctl $HOME/bin && export PATH=$PATH:$HOME/bin
+                eksctl version
+                
+                wget -cO - https://github.com/vmware-tanzu/carvel-ytt/releases/download/v0.30.0/ytt-linux-amd64 > ytt
+                chmod +x ./ytt
+                mv ytt $HOME/bin
+                ytt version
+                
+                ytt -f . > cluster-ytt.yaml
+                cat cluster-ytt.yaml
+                
+                eksctl create cluster -f cluster-ytt.yaml
                 '''
             }
         }
+        stage('update eks config') {
+            steps {
+                sh 'aws eks update-kubeconfig --name udacity --profile ${EKS_PROFILE_NAME}'
+                sh 'echo "ready to renew jenkins aws credentials. create new jenkins credentials with credentials stored in /var/lib/jenkins/.aws/credentials"'
+            }
+        }        
     }
 }
