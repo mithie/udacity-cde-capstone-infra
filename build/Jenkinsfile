@@ -10,11 +10,13 @@ pipeline {
         stage('prepare aws iam') {
             steps {
                 withAWS(credentials: 'aws-default-credentials', region: 'eu-central-1') {
-                    if ! aws cloudformation describe-stacks --region ${AWS_REGION} --stack-name ${CFN_STACK_NAME} ; then
-                        cd scripts && ./prepare-iam.sh ${EKS_ADMIN_ROLE} ${EKS_PROFILE_NAME} ${CFN_STACK_NAME}
-                    else
-                        echo "stack ${CFN_STACK_NAME} already exists. continue without action in this stage..."
-                    fi
+                    sh '''
+                        if ! aws cloudformation describe-stacks --region ${AWS_REGION} --stack-name ${CFN_STACK_NAME} ; then
+                            cd scripts && ./prepare-iam.sh ${EKS_ADMIN_ROLE} ${EKS_PROFILE_NAME} ${CFN_STACK_NAME}
+                        else
+                            echo "stack ${CFN_STACK_NAME} already exists. continue without action in this stage..."
+                        fi
+                    '''
                 }
             }
         }
