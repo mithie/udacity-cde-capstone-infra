@@ -7,7 +7,7 @@ EKS_ADMIN_USER=udacity-eks-admin-user
 
 aws cloudformation deploy \
   --template-file ../config/iam/prepare-iam-cfn.yaml \
-  --stack-name "udacity-eks-roles-and-permissions" \
+  --stack-name $CFN_STACK_NAME \
   --parameter-overrides EKSUserName=$EKS_ADMIN_USER EKSRoleName=$EKS_ROLE_NAME \
   --region "eu-central-1" \
   --capabilities "CAPABILITY_IAM" "CAPABILITY_NAMED_IAM" \
