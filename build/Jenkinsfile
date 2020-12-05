@@ -85,21 +85,21 @@ pipeline {
             }
         }
         stage('Installing Ingress Controller') {
-          when {
-            expression { eksClusterExists == 'false' }
-          }
-          steps {
-            withEnv(['PATH+EXTRA=/var/lib/jenkins/bin']) {
-                sh '''
-                    kubectl apply -f "https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.41.2/deploy/static/provider/aws/deploy.yaml"
-                    echo "waiting for ingress controller to be available"
-                    kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s
-                '''
+            when {
+                expression { eksClusterExists == 'false' }
             }
-          }
+            steps {
+                withEnv(['PATH+EXTRA=/var/lib/jenkins/bin']) {
+                    sh '''
+                        kubectl apply -f "https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.41.2/deploy/static/provider/aws/deploy.yaml"
+                        echo "waiting for ingress controller to be available"
+                        kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s
+                    '''
+                }
+            }
         }
-      }
     }
+      
     post {
         failure {
             withAWS(credentials: 'aws-default-credentials', region: 'eu-central-1') {
