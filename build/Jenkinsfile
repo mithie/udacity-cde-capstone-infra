@@ -61,7 +61,7 @@ pipeline {
                 expression { eksClusterExists == 'false' }
             }
             steps {
-                withEnv(['PATH+EXTRA=/var/lib/jenkins/']) {
+                withEnv(['PATH+EXTRA=/var/lib/jenkins/bin']) {
                     echo "$PATH"
                     sh 'eksctl version'
                     sh 'kubectl version --client --short'
