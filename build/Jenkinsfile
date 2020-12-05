@@ -78,7 +78,7 @@ pipeline {
                 }
             }
         }
-        stage('update eks config') {
+        stage('Update EKS Config') {
             steps {
                 sh 'aws eks update-kubeconfig --name udacity --profile ${EKS_PROFILE_NAME}'
                 sh 'echo "ready to renew jenkins aws credentials. create new jenkins credentials with credentials stored in /var/lib/jenkins/.aws/credentials"'

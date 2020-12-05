@@ -26,13 +26,19 @@ The following software needs to be installed:
 Once the pipeline has been set up and configured properly go to your newly created pipeline and click on the `build now` link. This will setup an EKS cluster with proper permissions
 to access it with `kubectl` from the command line.
 
-## What's going to be build
-The Jenkins build job is separated in three stages and will create the following artifacts:
-1. **Stage one: prepare aws iam**  
-   IAM Role, User and Permission to build and access the EKS cluster. This is done via Cloud Formation. The script creates
-   an IAM User and Role. The Role will be used as Admin role for accessing the cluster and will have the user added in its trust relationship. The user in turn
-   will be granted permissions to assume this role. Further it will update the aws config and aws credentials files for allowing access via kubectl.
-2. **Stage two: install udacity eks cluster**  
-   In this step the EKS cluster is build with eksctl. 
-3. **Stage three: update eks config**  
-   The last step updates the kubeconfig file and adds the profile created in stage one.
+## Pipeline Stages
+
+| Stage | Description |
+|:---- |:----------- |
+| `Check if EKS Cluster exists` | Check whether EKS cluster has already been built. If `yes` then the following steps will be ignored. |
+| `Prepare AWS IAM` |  IAM Role, User and Permission to build and access the EKS cluster. This is done via Cloud Formation. see [IAM CFN](./config/iam/prepare-iam-cfn.yaml) for details |
+| `Install tooling (eksctl, kubectl, ytt)` | Install all the necessary tooling for creating an EKS cluster. |
+| `Create EKS Cluster` | Create the EKS cluster with `eksctl`. see [eks config template](./config/eks/cluster-template.yaml) and [eks config values](./config/eks/values.yaml) for further details.  |
+| `Update EKS Config` | Updates the kubeconfig file and adds the profile created in the second stage. |
+| `Installing Ingress Controller` | Install NGINX ingress controller for enabling external cluster access. |
+
+## Post Actions
+| Action | Description |
+|:---- |:----------- |
+| `failure` | This action rolls back the whole EKS setup when anything went wrong in the previous stages.  |
+| `success` | Prints a success message when the EKS cluster was bootstrapped successfully. |
