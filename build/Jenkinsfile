@@ -90,9 +90,11 @@ pipeline {
           }
           steps {
             withEnv(['PATH+EXTRA=/var/lib/jenkins/bin']) {
-              sh 'kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.41.2/deploy/static/provider/aws/deploy.yaml'
-              echo 'waiting for ingress controller to be available'
-              sh 'kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s'
+                sh '''
+                    kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.41.2/deploy/static/provider/aws/deploy.yaml
+                    echo "waiting for ingress controller to be available"
+                    kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s
+                '''
             }
           }
         }
