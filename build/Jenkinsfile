@@ -105,10 +105,14 @@ pipeline {
             withAWS(credentials: 'aws-default-credentials', region: 'eu-central-1') {
                 withEnv(['PATH+EXTRA=/var/lib/jenkins/bin']) {
                     dir('config/eks') {
-                        echo 'There was an error. EKS Resources and IAM Setup will be deleted automatically'
-                        sh 'aws cloudformation delete-stack --stack-name ${CFN_IAM_STACK}'
-                        sh 'sh 'kubectl delete -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.41.2/deploy/static/provider/aws/deploy.yaml''
-                        sh 'eksctl delete cluster -f cluster-ytt.yaml --profile ${EKS_PROFILE_NAME}'
+                        sh '''
+                            echo "There was an error. EKS Resources and IAM Setup will be deleted automatically"
+                            
+                            aws cloudformation delete-stack --stack-name ${CFN_IAM_STACK}
+                            kubectl delete -f "https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.41.2/deploy/static/provider/aws/deploy.yaml"
+                            eksctl delete cluster -f cluster-ytt.yaml --profile ${EKS_PROFILE_NAME}
+                        '''
+                        
                     }
                 }
             }
