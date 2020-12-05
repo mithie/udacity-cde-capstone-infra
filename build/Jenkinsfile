@@ -39,23 +39,17 @@ pipeline {
             steps {
                 withEnv(['JENKINS_BIN=/var/lib/jenkins/bin']) {
                     sh '''
-                        sleep 5
-                        aws sts get-caller-identity
-                        
                         export LC_CTYPE=en_US.UTF-8
                         curl --silent --location https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz | tar xz -C .
                         mv eksctl $JENKINS_BIN
-                        eksctl version
                         
                         wget -cO - https://github.com/vmware-tanzu/carvel-ytt/releases/download/v0.30.0/ytt-linux-amd64 > ytt
                         chmod +x ./ytt
                         mv ytt $JENKINS_BIN
-                        ytt version
                         
                         curl -sl https://storage.googleapis.com/kubernetes-release/release/v1.19.0/bin/$(uname -s | tr '[:upper:]' '[:lower:]')/amd64/kubectl -o kubectl
                         chmod +x ./kubectl
 	                    mv kubectl $JENKINS_BIN
-	                    kubectl version --client --short
                     '''
                 }
             }
@@ -66,19 +60,51 @@ pipeline {
             }
             steps {
                 withEnv(['PATH+EXTRA=/var/lib/jenkins/bin']) {
-                    echo "$PATH"
+                    dir('config/eks') {
+                        sh '''
+                            sleep 5
+                            aws sts get-caller-identity
+                            
+                            echo $PATH
+                            
+                            eksctl version
+                            ytt version
+                            
+                            ytt -f . > cluster-ytt.yaml
+                            cat cluster-ytt.yaml
+                            eksctl create cluster -f cluster-ytt.yaml --profile ${EKS_PROFILE_NAME}
+                        '''
+                    }
                 }
             }
         }
+        stage('update eks config') {
+            steps {
+                sh 'aws eks update-kubeconfig --name udacity --profile ${EKS_PROFILE_NAME}'
+                sh 'echo "ready to renew jenkins aws credentials. create new jenkins credentials with credentials stored in /var/lib/jenkins/.aws/credentials"'
+            }
+        }
+        stage('Installing Ingress Controller') {
+          when {
+            expression { eksClusterExists == 'false' }
+          }
+          steps {
+              sh 'kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.41.2/deploy/static/provider/aws/deploy.yaml'
+              echo 'waiting for ingress controller to be available'
+              sh 'kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s'
+          }
+        }
+      }
     }
     post {
         failure {
             withAWS(credentials: 'aws-default-credentials', region: 'eu-central-1') {
                 withEnv(['PATH+EXTRA=/var/lib/jenkins/bin']) {
                     dir('config/eks') {
-                        echo 'There was an error. EKS Cluster and IAM Setup will be deleted automatically'
+                        echo 'There was an error. EKS Resources and IAM Setup will be deleted automatically'
                         sh 'aws cloudformation delete-stack --stack-name ${CFN_IAM_STACK}'
-                        sh '#eksctl delete cluster -f cluster-ytt.yaml --profile ${EKS_PROFILE_NAME}'
+                        sh 'sh 'kubectl delete -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.41.2/deploy/static/provider/aws/deploy.yaml''
+                        sh 'eksctl delete cluster -f cluster-ytt.yaml --profile ${EKS_PROFILE_NAME}'
                     }
                 }
             }
