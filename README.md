@@ -2,6 +2,7 @@
 This project sets up the infrastructure for the [Udacity Cloud DevOps Engineer Capstone Project](https://www.udacity.com/course/cloud-dev-ops-nanodegree--nd9991).
 The whole infrastructure setup is configured in a [Jenkinsfile](build/Jenkinsfile) which contains the relevant build steps to get everything up an running.
 
+
 ## Preconditions
 The following software needs to be installed:
 * [Jenkins build server](https://www.jenkins.io/)
@@ -45,3 +46,14 @@ to access it with `kubectl` from the command line.
 |:---- |:----------- |
 | `failure` | This action rolls back the whole EKS setup when anything went wrong in the previous stages.  |
 | `success` | Prints a success message when the EKS cluster was bootstrapped successfully. |
+
+## Cleanup
+The whole infrastructure setup can be deleted again by executing the command `make destroy_all` as defined in the project's [Makefile](./build/Makefile).
+
+## Makefile targets
+| Target | Description |
+|:---- |:----------- |
+| `destroy_ingress` | Removes the Ingress Controller from Kubernetes and deletes the Load Balancer on AWS. |
+| `destroy_cluster` | Removes the Kubernetes Control Plane and Node Groups. |
+| `destroy_iam` | Removes the IAM Roles and Permissions granting cluster acccess. |
+| `destroy_all` | Executes all of the above commands in consecutive order. |
