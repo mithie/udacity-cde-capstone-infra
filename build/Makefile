@@ -6,7 +6,7 @@ destroy_cluster:
 	# destroy eks cluster
 	@ytt -f ../config/eks > ../config/eks/cluster-ytt.yaml
 	@eksctl delete cluster -f ../config/eks/cluster-ytt.yaml --profile udacity-eks
-	#@rm cluster-ytt.yaml
+	@rm cluster-ytt.yaml
 	
 destroy_iam:
 	# destroy aws iam setup
