@@ -3,5 +3,5 @@
 EKSClusterName: udacity
 EKSRegion: eu-central-1
 EKSNodegroupName: udacity-ng-1
-EKSNodegroupInstanceType: t2.micro
+EKSNodegroupInstanceType: t3.medium
 EKSNodegroupDesiredCapacity: 2
