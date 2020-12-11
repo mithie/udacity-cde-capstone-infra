@@ -2,6 +2,15 @@
 This project sets up the infrastructure for the [Udacity Cloud DevOps Engineer Capstone Project](https://www.udacity.com/course/cloud-dev-ops-nanodegree--nd9991).
 The whole infrastructure setup is configured in a [Jenkinsfile](build/Jenkinsfile) which contains the relevant build steps to get everything up an running.
 
+ ## Project Structure
+
+| File/Folder | Description |
+|:---- |:----------- |
+| `build` | Contains the Jenkinsfile where the build stages for this project are defined and a Makefile for cleaning up the environment. |
+| `config/eks` | Contains the EKS cluster configuration files which will be used by `eksctl` for setting up the Kubernetes cluster. |
+| `config/iam` | Contains a Cloud Formation script for initializing the cluster with the proper roles and permissions. |
+| `scripts` | Contains a shell helper script which executes Cloud Formation and updates the local AWS comfiguration on the Jenkins master. |
+| `README.md` | This file you are actually reading. |
 
 ## Preconditions
 The following software needs to be installed:
